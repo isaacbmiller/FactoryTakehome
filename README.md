@@ -26,8 +26,9 @@ python run.py
 
 # TODO
 
-- [ ] Finish developing the chain according to the linear fields
+- [x] Finish developing the chain according to the linear fields
 - [ ] Convert the chain into GraphQL schema to use with linear api
+- [ ] Add error handling with LangChain
 - [ ] Add tests
   - [ ] Test endpoints
   - [ ] Evaluate prompts using langsmith(still on waitlist :/)
