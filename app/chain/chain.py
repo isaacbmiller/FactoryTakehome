@@ -11,6 +11,7 @@ from langchain.output_parsers import PydanticOutputParser
 
 import dotenv
 import os
+
 dotenv.load_dotenv()
 
 set_llm_cache(SQLiteCache(database_path=".langchain.db"))
@@ -49,19 +50,21 @@ success_prompt = PromptTemplate.from_template('''
                                             The format should be markdown checkboxes as one would see inside of a Jira ticket.''')
 success_chain = success_prompt | model_parse_str
 
+
+
 class TicketTypeAndPriority(BaseModel):
-    type: str = Field(description="one of feature, bug, KTLO, system_improvement")
-    priority: str = Field(description="one of critical, high, medium, low")
+    type: str = Field(description="one of feature, bug, improvement")
+    priority: str = Field(description="one of urgent, high, medium, low")
 
     @validator("type")
     def ticket_is_valid_type(cls, field):
-        if field not in ["feature", "bug", "KTLO", "system_improvement"]:
+        if field not in ["feature", "bug", "improvement"]:
             raise ValueError("Invalid ticket type")
         return field
     
     @validator("priority")
     def ticket_is_valid_priority(cls, field):
-        if field not in ["critical", "high", "medium", "low"]:
+        if field not in ["urgent", "high", "medium", "low"]:
             raise ValueError("Invalid ticket priority")
         return field
     
@@ -80,7 +83,21 @@ ticket_type_prompt = PromptTemplate.from_template(''' \
 
 ticket_type_chain = ticket_type_prompt | model | ticket_type_parser
 
+subtask_prompt = PromptTemplate.from_template('''
+                                            You are an engineering manager with an eye for detail. You are helping to create parts of a ticket for a task. \
+                                            Task context:
+                                                Description: "{description}"
+                                                Objective: "{objective}"
+                                                Success Criteria: "{success_criteria}"
+                                            ---
+                                            Given the above information, your job is to create  \
+                                              
+                                              
+                                              ''')
 
+
+
+# ---------------------------------------------
 
 ticket_output_prompt = PromptTemplate.from_template(''' \
                                              You are an engineering manager with an eye for detail. \
@@ -126,7 +143,7 @@ for description in test_descriptions:
 # Objective: For feature requests, a description of the desired outcome. - Done
 # Type of Ticket: Categorizing the ticket (e.g., bug, feature request, improvement, task). - Done
 # Success Criteria: For feature requests, a description of the desired outcome. - Done
-# Priority: Indicating the urgency (e.g., critical, high, medium, low).
+# Priority: Indicating the urgency (e.g., critical, high, medium, low) - Done
 # Expected Resolution: For feature requests, a description of the desired outcome.
 # Tags/Labels: Keywords to help categorize and search for the ticket.
 # Estimated Time for Completion: An estimate of how long it will take to resolve the ticket.
