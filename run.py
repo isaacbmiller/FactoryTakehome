@@ -6,16 +6,19 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def index():
+    '''Index page, mostly useful to check if proxy is working'''
     return 'Hello World'
 
 @app.route('/linear-consumer', methods=['POST'])
 def linear_consumer():
+    '''Consume Linear webhook, and update issue'''
     data = request.get_json()
     if data["action"] != "create":
         return 'Data received', 200
     identifier = data["data"]["identifier"]
     description = data["data"]["title"]
 
+    # TODO: Clean up this code
     generated_ticket_details = generate_ticket_details(description)
     print(generated_ticket_details)
     # def update_issue(issue_id, title, description, priority):
@@ -27,7 +30,7 @@ def linear_consumer():
     }
 
     issue = update_issue(**params)
-    
+
     return 'Data received', 200
 
 if __name__ == '__main__':

@@ -33,7 +33,8 @@ objective_chain = objective_prompt | model_parse_str
 
 title_prompt = PromptTemplate.from_template(
 '''
-You are an engineering manager with an eye for detail. You are helping to create parts of a ticket for a task.
+You are an engineering manager with an eye for detail. 
+You are helping to create parts of a ticket for a task.
 Task context:
     Description: "{description}"
     Objective: "{objective}"
@@ -44,7 +45,8 @@ title_chain = title_prompt | model_parse_str
 
 success_prompt = PromptTemplate.from_template(
 '''
-You are an engineering manager with an eye for detail and creating actionable objectives. You are helping to create parts of a ticket for a task.
+You are an engineering manager with an eye for detail and creating actionable objectives. 
+You are helping to create parts of a ticket for a task.
 Task context:
         Description: "{description}"
         Objective: "{objective}"
