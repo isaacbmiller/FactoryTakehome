@@ -1,5 +1,6 @@
 TODO: Add description, details, and demo video
 
+# Add webhook to linear
 # Set up proxy for local development
 
 I chose to use ngrok because it is free and easy, but you can use any other proxy service, as long as it forwards traffic to your local port 3000.
@@ -27,7 +28,8 @@ python run.py
 # TODO
 
 - [x] Finish developing the chain according to the linear fields
-- [ ] Convert the chain into GraphQL schema to use with linear api
+- [x] Convert the chain into GraphQL schema to use with linear api
+- [ ] Clean up code
 - [ ] Add error handling with LangChain
 - [ ] Add tests
   - [ ] Test endpoints

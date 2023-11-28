@@ -24,8 +24,8 @@ mutation = gql(
 """
 )
 
-def create_issue(issue_id, title, description, priority):
-    '''Create an issue in Linear'''
+def update_issue(issue_id, title, description, priority):
+    '''Update an issue in Linear'''
     priority_dict = {
         "urgent": 1,
         "high": 2,
@@ -48,6 +48,6 @@ def create_issue(issue_id, title, description, priority):
     return result
 
 if __name__ == "__main__":
-    issue = create_issue("LIN-11", "This is a test title", "This is a test description", "urgent")
+    issue = update_issue("LIN-11", "This is a test title", "This is a test description", "urgent")
     print(issue)
 

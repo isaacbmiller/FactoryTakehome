@@ -1,30 +1,29 @@
 import os
-
+import dotenv
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.schema import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough
 from langchain.cache import SQLiteCache
 from langchain.globals import set_llm_cache
-from langchain.pydantic_v1 import BaseModel, Field, validator
 from langchain.output_parsers import PydanticOutputParser
-
-import dotenv
-
+from langchain.pydantic_v1 import BaseModel, Field, validator
 
 dotenv.load_dotenv()
 
-set_llm_cache(SQLiteCache(database_path=".langchain.db"))
-
+# Constants
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-model = ChatOpenAI()
+DATABASE_PATH = ".langchain.db"
 
+# Initialize cache and model
+set_llm_cache(SQLiteCache(database_path=DATABASE_PATH))
+model = ChatOpenAI()
 model_parse_str = model | StrOutputParser()
 
 objective_prompt = PromptTemplate.from_template(
 '''
-You are an engineering manager with an eye for detail and creating actionable objectives.\
-You are helping to create parts of a ticket for a task. \
+You are an engineering manager with an eye for detail and creating actionable objectives.
+You are helping to create parts of a ticket for a task.
 Task context:
     Description: "{description}"
 ---
@@ -34,24 +33,24 @@ objective_chain = objective_prompt | model_parse_str
 
 title_prompt = PromptTemplate.from_template(
 '''
-You are an engineering manager with an eye for detail. You are helping to create parts of a ticket for a task. \
+You are an engineering manager with an eye for detail. You are helping to create parts of a ticket for a task.
 Task context:
     Description: "{description}"
     Objective: "{objective}"
 ---
-Write a concise title for the task
+Write a concise title for the task.
 ''')
 title_chain = title_prompt | model_parse_str
 
 success_prompt = PromptTemplate.from_template(
 '''
-You are an engineering manager with an eye for detail and creating actionable objectives. You are helping to create parts of a ticket for a task. \
+You are an engineering manager with an eye for detail and creating actionable objectives. You are helping to create parts of a ticket for a task.
 Task context:
         Description: "{description}"
         Objective: "{objective}"
 ---
-Write a fleshed out success criteria for the task. The criteria should be measurable and observable. \
-The criteria should be written in a way that it is clear when the task is complete. \
+Write a fleshed out success criteria for the task. The criteria should be measurable and observable.
+The criteria should be written in a way that it is clear when the task is complete.
 The format should be markdown checkboxes as one would see inside of a Jira ticket.
 ''')
 success_chain = success_prompt | model_parse_str
@@ -105,32 +104,33 @@ Given the above information, your job is to create actionable substeps. \
 Each of these substeps should be a task that can be completed by a single person. \
 The scope of each substep should be small enough that it can be completed in a single day. \
 The format should be a list markdown checkboxes of actionable task descriptions.
-    ''')
+''')
 subtask_chain = subtask_prompt | model_parse_str
 
-compiled_description = '''
-Description:
-{description}
-\nObjective:
-{objective}
-\nSubtasks:
-{subtasks}
-\nSuccess Criteria:
-{success_criteria}
-'''
-
-
-# ---------------------------------------------
-
-test_chain = (
-    RunnablePassthrough.assign(objective=objective_chain)
-    | RunnablePassthrough.assign(title=title_chain)
-    | RunnablePassthrough.assign(ticket_type=ticket_type_chain)
-    | RunnablePassthrough.assign(success_criteria=success_chain)
-    | RunnablePassthrough.assign(subtasks=subtask_chain)
+COMPILED_DESCRIPTION = (
+    "Description:\n{description}\n\nObjective:\n{objective}\n\nSubtasks:\n{subtasks}\n\nSuccess Criteria:\n{success_criteria}"
 )
-# Linear attributes:
-# Title, Description (Action items + success criteria), Emoji(wrench)+(Robot)->Robot, Priority, Labels
+
+# Main function to generate ticket details
+def generate_ticket_details(description):
+    '''Generate ticket details from a description'''
+    try:
+        ticket_detail_chain = (
+            RunnablePassthrough.assign(objective=objective_chain)
+            | RunnablePassthrough.assign(title=title_chain)
+            | RunnablePassthrough.assign(ticket_type=ticket_type_chain)
+            | RunnablePassthrough.assign(success_criteria=success_chain)
+            | RunnablePassthrough.assign(subtasks=subtask_chain)
+        )
+        result = ticket_detail_chain.invoke({"description": description})
+        compiled_description = (
+            "Description:\n{description}\n\nObjective:\n{objective}\n\nSubtasks:\n{subtasks}\n\nSuccess Criteria:\n{success_criteria}"
+        )
+        result["compiled_description"] = compiled_description.format(**result)
+        return result
+    except Exception as e:
+        # Handle or log the exception as needed
+        raise e
 
 if __name__ == "__main__":
     test_descriptions = [
@@ -139,7 +139,5 @@ if __name__ == "__main__":
         "Update Documentation for API Endpoints"
     ]
     for description in test_descriptions:
-        result = test_chain.invoke({"description": description})
-        result["compiled_description"] = compiled_description.format(**result)
-        print(result.keys())
-        print(result["compiled_description"])
+        ticket_details = generate_ticket_details(description)
+        print(ticket_details)
