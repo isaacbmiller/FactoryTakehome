@@ -130,13 +130,14 @@ python run.py
 
 - [x] Finish developing the chain according to the linear fields
 - [x] Convert the chain into GraphQL schema to use with linear api
-- [ ] Use both title and description if available
-- [ ] Clean up code
+- [x] Clean up code
 - [x] Add error handling with LangChain
+
 - [ ] Figure out how to share without deploying
   - [ ] Need to share linear workspace
   - [ ] Double check what API keys are needed
 
+- [ ] Use both title and description if available
 - [ ] Validate Linear Webhook using API key
 
 - [ ] Add tests
