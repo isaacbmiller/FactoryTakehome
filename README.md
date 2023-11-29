@@ -114,11 +114,19 @@ ngrok config add-authtoken <token>
 ngrok http --domain=<your domain here> 3000
 ```
 
+### Env setup
+
+I have provided a `.env.example` file in the root directory of this project. You will need to rename this file to `.env` and fill in the variables. You can find the values for these variables in the next two sections.
+
 ### Linear setup
 
 Follow the guide [here](https://developers.linear.app/docs/graphql/webhooks) to add a webhook to your linear workspace. I used the Issue data changed event, and the link should be the ngrok url with the `/linear-consumer` endpoint.
 
 You will also need to add a personal access token to your linear account. You can do this by going to your account settings and clicking on the API tab. Then click on the "Create new token" button. You will need to copy this token and add it to the `.env` file in the root directory of this project under the `LINEAR_API_KEY` variable.
+
+### OpenAI setup
+
+You will need to add your OpenAI API key to the `.env` file in the root directory of this project under the `OPENAI_API_KEY` variable.
 
 ### Run the local server
 
@@ -135,13 +143,10 @@ python run.py
 ## TODO
 
 - [x] Finish developing the chain according to the linear fields
-- [x] Convert the chain into GraphQL schema to use with linear API
-- [x] Clean up code
+- [x] Convert the response into GraphQL schema to use with linear API
 - [x] Add error handling with LangChain
-
-- [ ] Figure out how to share without deploying
-  - [ ] Need to share linear workspace
-  - [ ] Double-check what API keys are needed
+- [x] Figure out how to share without deploying
+  - [x] Double-check what API keys are needed
 
 - [ ] Use both title and description if available
 - [ ] Validate Linear Webhook using API key
