@@ -1,6 +1,8 @@
+"""This is the main entrypoint for the application. It is used to capture the webhook from Linear, 
+and update the issue with the generated ticket details"""
+
 from flask import Flask, request
-from app.chain.chain import generate_ticket_details
-from app.models.update_issue import update_issue
+from app.api.linear_consumer import consume_linear_webhook
 
 app = Flask(__name__)
 
@@ -13,25 +15,8 @@ def index():
 def linear_consumer():
     '''Consume Linear webhook, and update issue'''
     data = request.get_json()
-    if data["action"] != "create":
-        return 'Data received', 200
-    identifier = data["data"]["identifier"]
-    description = data["data"]["title"]
+    return consume_linear_webhook(data)
 
-    # TODO: Clean up this code
-    generated_ticket_details = generate_ticket_details(description)
-    print(generated_ticket_details)
-    # def update_issue(issue_id, title, description, priority):
-    params = {
-        "issue_id": identifier,
-        "title": generated_ticket_details["title"],
-        "description": generated_ticket_details["compiled_description"],
-        "priority": generated_ticket_details["ticket_type"].priority,
-    }
-
-    issue = update_issue(**params)
-
-    return 'Data received', 200
 
 if __name__ == '__main__':
     app.run(debug=True, port=3000)

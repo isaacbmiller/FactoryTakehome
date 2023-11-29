@@ -1,3 +1,4 @@
+"""This module contains the function to mutate the issue using the Linear GraphQL API"""
 import os
 
 from gql import gql, Client
@@ -10,7 +11,11 @@ dotenv.load_dotenv()
 LINEAR_API_KEY = os.getenv("LINEAR_API_KEY")
 
 transport = RequestsHTTPTransport(url="https://api.linear.app/graphql", headers={'Authorization': LINEAR_API_KEY})
-client = Client(transport=transport, fetch_schema_from_transport=True)
+
+with open('./app/models/Linear-API@current.graphql', encoding='utf-8') as f:
+    schema_str = f.read()
+
+client = Client(schema=schema_str, transport=transport)
 
 # Set up the mutation to update an issue
 mutation = gql(
@@ -18,7 +23,7 @@ mutation = gql(
 mutation IssueUpdate($input: IssueUpdateInput!, $issueUpdateId: String!) {
     issueUpdate(input: $input, id: $issueUpdateId) {
         issue {
-            title
+            id
         }
     }
 }
@@ -26,7 +31,7 @@ mutation IssueUpdate($input: IssueUpdateInput!, $issueUpdateId: String!) {
 )
 
 def update_issue(issue_id, title, description, priority):
-    '''Update an issue in Linear'''
+    '''Mutate the issue with the given id, and update the title, description, and priority'''
     priority_dict = {
         "urgent": 1,
         "high": 2,
@@ -41,7 +46,6 @@ def update_issue(issue_id, title, description, priority):
                 "title": title,
                 "description": description,
                 "priority": priority_dict[priority],
-                # "type": type, ## TODO: add type
             },
             "issueUpdateId": issue_id,
         },
@@ -49,5 +53,5 @@ def update_issue(issue_id, title, description, priority):
     return result
 
 if __name__ == "__main__":
-    issue = update_issue("LIN-11", "This is a test title", "This is a test description", "urgent")
+    issue = update_issue("LIN-11", "This is a test title2", "This is a test description", "urgent") # pylint: disable=invalid-name
     print(issue)

@@ -24,6 +24,14 @@ The LangChain pipeline is a series of prompts that are chained together to gener
 
 The resulting fields are then sent to the Linear API using a GraphQL mutation to update the ticket.
 
+### API
+
+The API is built using Flask. It has two endpoints:
+
+1. `/linear-consumer` - This is the endpoint that the Linear webhook sends a POST request to. It extracts the relevant information from the request, and then passes it to the LangChain pipeline.
+
+2. `/` - This is the endpoint that is used for testing. I found it most useful to ensure that the proxy was running locally. This would be removed for a production deployment.
+
 ### LangChain
 
 It uses different prompts for each field, and then uses the output from the previous prompt to generate the next field.
@@ -42,13 +50,13 @@ Write a concise primary actionable objective for the task.
 ```
 
 These are chained together using LCEL (LangChain Expression Language), to easily pipe the output from one prompt to the next, gradually building up the ticket.
-See ./app/chain/chain.py for the full code.
+See [app/chain/chain.py](app/chain/chain.py) for the full code.
 
 ### GraphQL
 
-The GraphQL schema is not actually used. Because I am only using a singular mutation, I have hard coded the mutation into the code. If I were to add more functionality, I would use the schema to generate the mutations.
+The GraphQL schema is downloaded as [app/api/Linear-API@current.graphql](app/api/Linear-API@current.graphql), and then parsed using the gql library. This is done when the client is initialized in [app/api/update_issue.py](app/api/update_issue.py).
 
-The code then looks like this:
+The mutation then looks like this:
 
 ```python
 mutation = gql(
@@ -76,11 +84,9 @@ result = client.execute(
     )
 ```
 
-You can see the entire file inside of app/models/update_issue.py
-
 ### Error handling
 
-For the fields that specifically have to be certain strings, being the priority and the type, I use a pydantic model to validate the input. If the input is not valid, it will raise an error, and the ticket will not be updated. Langchain will retry the prompt, and if it fails again, it will raise an error and the ticket will not be updated.
+For the fields that specifically have to be certain strings, being the priority and the type, I use a pydantic model to validate the input. If the input is not valid, it will raise an error, and the ticket will not be updated. Langchain will retry the prompt up to 6 times by defeault, and if it fails again, it will raise an error and the ticket will not be updated.
 
 ## Setup/Installation
 
@@ -124,10 +130,16 @@ python run.py
 
 - [x] Finish developing the chain according to the linear fields
 - [x] Convert the chain into GraphQL schema to use with linear api
+- [ ] Use both title and description if available
 - [ ] Clean up code
-- [ ] Add error handling with LangChain
+- [x] Add error handling with LangChain
+- [ ] Figure out how to share without deploying
+  - [ ] Need to share linear workspace
+  - [ ] Double check what API keys are needed
+
+- [ ] Validate Linear Webhook using API key
+
 - [ ] Add tests
   - [ ] Test endpoints
   - [ ] Evaluate prompts using langsmith(still on waitlist :/)
-- [ ] Figure out how to share without deploying
 - [ ] Dockerize and deploy to AWS
