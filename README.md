@@ -1,6 +1,8 @@
 # Linear Webhook Ticket Bot
 
-TODO: Add description, details, and demo video
+<img alt="DroidScrumMaster" src="https://github.com/isaacbmiller/LinearTicketBot/assets/17116851/a8aa3821-b510-4935-86ea-93b6a2ffde4e" width="500">
+
+## What is it
 
 This is a bot that uses the Linear API to automatically add relevant information to a ticket when it is created.
 
@@ -11,6 +13,10 @@ It uses LangChain to work with the OpenAI API to generate the following fields f
 3. Subtasks
 4. Success Criteria
 5. Priority
+
+## Demo
+
+https://github.com/isaacbmiller/LinearTicketBot/assets/17116851/d0fb9457-d4e3-42f2-a13f-05bfd62e8397
 
 ## How it works
 
@@ -28,13 +34,13 @@ The resulting fields are then sent to the Linear API using a GraphQL mutation to
 
 The API is built using Flask. It has two endpoints:
 
-1. `/linear-consumer` - This is the endpoint that the Linear webhook sends a POST request to. It extracts the relevant information from the request, and then passes it to the LangChain pipeline.
+1. `/linear-consumer` - This is the endpoint that the Linear webhook sends a POST request to. It extracts the relevant information from the request and then passes it to the LangChain pipeline.
 
-2. `/` - This is the endpoint that is used for testing. I found it most useful to ensure that the proxy was running locally. This would be removed for a production deployment.
+2. `/` - This is the endpoint that is used for testing. I found it most helpful to ensure that the proxy was running locally. This would be removed for a production deployment.
 
 ### LangChain
 
-It uses different prompts for each field, and then uses the output from the previous prompt to generate the next field.
+It uses different prompts for each field and then uses the output from the previous prompt to generate the following field.
 
 For example, the prompt for the objective is:
 
@@ -49,12 +55,12 @@ Write a concise primary actionable objective for the task.
 """
 ```
 
-These are chained together using LCEL (LangChain Expression Language), to easily pipe the output from one prompt to the next, gradually building up the ticket.
+These are chained together using LCEL (LangChain Expression Language) to easily pipe the output from one prompt to the next, gradually building up the ticket.
 See [app/chain/chain.py](app/chain/chain.py) for the full code.
 
 ### GraphQL
 
-The GraphQL schema is downloaded as [app/api/Linear-API@current.graphql](app/api/Linear-API@current.graphql), and then parsed using the gql library. This is done when the client is initialized in [app/api/update_issue.py](app/api/update_issue.py).
+The GraphQL schema is downloaded as [app/api/Linear-API@current.graphql](app/api/Linear-API@current.graphql) and then parsed using the gql library. This is done when the client is initialized in [app/api/update_issue.py](app/api/update_issue.py).
 
 The mutation then looks like this:
 
@@ -86,17 +92,17 @@ result = client.execute(
 
 ### Error handling
 
-For the fields that specifically have to be certain strings, being the priority and the type, I use a pydantic model to validate the input. If the input is not valid, it will raise an error, and the ticket will not be updated. Langchain will retry the prompt up to 6 times by defeault, and if it fails again, it will raise an error and the ticket will not be updated.
+For the fields that specifically have to be certain strings, being the priority and the type, I use a Pydantic model to validate the input. If the input is not valid, it will raise an error, and the ticket will not be updated. Langchain will retry the prompt up to 6 times by default, and if it fails again, it will raise an error, and the ticket will not be updated.
 
 ## Setup/Installation
 
 ### Set up proxy for local development
 
-You need to set up any sort of proxy to forward traffic from your local machine to the internet.
+You need to set up any proxy to forward traffic from your local machine to the internet.
 
-I chose to use ngrok because it is free and easy, but you can use any other proxy service, as long as it forwards traffic to your local port 3000.
+I chose to use ngrok because it is free and easy, but you can use any other proxy service as long as it forwards traffic to your local port 3000.
 
-You can make an ngrok account [here](https://dashboard.ngrok.com/signup).
+You can make a ngrok account [here](https://dashboard.ngrok.com/signup).
 
 You need to get the auth token and the static domain(free) for your account.
 
@@ -112,11 +118,11 @@ ngrok http --domain=<your domain here> 3000
 
 Follow the guide [here](https://developers.linear.app/docs/graphql/webhooks) to add a webhook to your linear workspace. I used the Issue data changed event, and the link should be the ngrok url with the `/linear-consumer` endpoint.
 
-You will also need to add a personal access token to your linear account. You can do this by going to your account settings, and clicking on the API tab. Then click on the "Create new token" button. You will need to copy this token and add it to the `.env` file in the root directory of this project under the `LINEAR_API_KEY` variable.
+You will also need to add a personal access token to your linear account. You can do this by going to your account settings and clicking on the API tab. Then click on the "Create new token" button. You will need to copy this token and add it to the `.env` file in the root directory of this project under the `LINEAR_API_KEY` variable.
 
 ### Run the local server
 
-In a separate terminal, start the flask server in debug mode
+In a separate terminal, start the flask server in debug mode.
 
 ```bash
 # Install dependencies
@@ -129,13 +135,13 @@ python run.py
 ## TODO
 
 - [x] Finish developing the chain according to the linear fields
-- [x] Convert the chain into GraphQL schema to use with linear api
+- [x] Convert the chain into GraphQL schema to use with linear API
 - [x] Clean up code
 - [x] Add error handling with LangChain
 
 - [ ] Figure out how to share without deploying
   - [ ] Need to share linear workspace
-  - [ ] Double check what API keys are needed
+  - [ ] Double-check what API keys are needed
 
 - [ ] Use both title and description if available
 - [ ] Validate Linear Webhook using API key
