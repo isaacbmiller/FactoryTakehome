@@ -26,6 +26,8 @@ When the Linear webhook is triggered, it sends a POST request to the `/linear-co
 
 These are extracted and then passed into the LangChain pipeline.
 
+NOTE: Only the Title is currently used, the description will be overwritten
+
 The LangChain pipeline is a series of prompts that are chained together to generate the ticket fields.
 
 The resulting fields are then sent to the Linear API using a GraphQL mutation to update the ticket.
